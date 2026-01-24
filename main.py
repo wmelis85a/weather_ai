@@ -2,7 +2,7 @@
 FastAPI application with LangChain agent using Grok models.
 """
 import os
-from typing import Optional
+from typing import Optional, Dict
 from dotenv import load_dotenv
 from fastapi import FastAPI, HTTPException
 from pydantic import BaseModel
@@ -22,6 +22,9 @@ app = FastAPI(
 
 # Get XAI API key from environment
 XAI_API_KEY = os.getenv("XAI_API_KEY")
+
+# Cache for agents by model name
+_agent_cache: Dict[str, any] = {}
 
 # Define request/response models
 class AgentRequest(BaseModel):
@@ -50,8 +53,12 @@ def get_weather_info(location: str) -> str:
 # Create tools list
 tools = [get_weather_info]
 
-def create_weather_agent(model_name: str = "grok-beta"):
-    """Create a LangChain agent with the specified Grok model."""
+def get_or_create_agent(model_name: str = "grok-beta"):
+    """Get or create a cached LangChain agent with the specified Grok model."""
+    # Check cache first
+    if model_name in _agent_cache:
+        return _agent_cache[model_name]
+    
     if not XAI_API_KEY:
         raise ValueError("XAI_API_KEY environment variable is not set")
     
@@ -71,6 +78,9 @@ def create_weather_agent(model_name: str = "grok-beta"):
         tools=tools,
         system_prompt=system_prompt
     )
+    
+    # Cache the agent
+    _agent_cache[model_name] = agent
     
     return agent
 
@@ -110,22 +120,33 @@ async def chat_with_agent(request: AgentRequest):
         )
     
     try:
-        # Create agent
-        agent = create_weather_agent(request.model)
+        # Get or create cached agent
+        agent = get_or_create_agent(request.model)
         
-        # Run the agent
-        result = agent.invoke({"messages": [{"role": "user", "content": request.query}]})
+        # Invoke the agent with the user's message
+        # LangChain agents expect messages in this format
+        result = agent.invoke({
+            "messages": [
+                {"role": "user", "content": request.query}
+            ]
+        })
         
-        # Extract the response from messages
+        # Extract the final response from the agent
         response_text = ""
-        if "messages" in result:
-            for msg in result["messages"]:
-                if hasattr(msg, "content") and msg.content:
-                    response_text = msg.content
+        if "messages" in result and len(result["messages"]) > 0:
+            # Get the last message which should be the agent's response
+            last_message = result["messages"][-1]
+            if hasattr(last_message, "content"):
+                response_text = last_message.content
+            elif isinstance(last_message, dict) and "content" in last_message:
+                response_text = last_message["content"]
+        
+        if not response_text:
+            response_text = str(result.get("output", "No response generated"))
         
         return AgentResponse(
             query=request.query,
-            response=response_text or "No response generated",
+            response=response_text,
             model=request.model
         )
     except Exception as e:
