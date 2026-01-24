@@ -7,9 +7,8 @@ from dotenv import load_dotenv
 from fastapi import FastAPI, HTTPException
 from pydantic import BaseModel
 from langchain_xai import ChatXAI
-from langchain.agents import AgentExecutor, create_react_agent
-from langchain.prompts import PromptTemplate
-from langchain_core.tools import Tool
+from langchain.agents import create_agent
+from langchain_core.tools import tool
 
 # Load environment variables
 load_dotenv()
@@ -35,45 +34,24 @@ class AgentResponse(BaseModel):
     model: str
 
 # Define a simple weather tool for the agent
+@tool
 def get_weather_info(location: str) -> str:
-    """Get weather information for a location."""
+    """Get weather information for a location.
+    
+    Args:
+        location: The name of the location to get weather for.
+        
+    Returns:
+        Weather information for the location.
+    """
     # This is a placeholder - in a real app, you'd call a weather API
     return f"The weather in {location} is sunny with a temperature of 72°F."
 
-# Create tools for the agent
-tools = [
-    Tool(
-        name="WeatherInfo",
-        func=get_weather_info,
-        description="Useful for getting weather information for a specific location. Input should be a location name."
-    )
-]
+# Create tools list
+tools = [get_weather_info]
 
-# Define the prompt template for the agent
-template = """Answer the following questions as best you can. You have access to the following tools:
-
-{tools}
-
-Use the following format:
-
-Question: the input question you must answer
-Thought: you should always think about what to do
-Action: the action to take, should be one of [{tool_names}]
-Action Input: the input to the action
-Observation: the result of the action
-... (this Thought/Action/Action Input/Observation can repeat N times)
-Thought: I now know the final answer
-Final Answer: the final answer to the original input question
-
-Begin!
-
-Question: {input}
-Thought: {agent_scratchpad}"""
-
-prompt = PromptTemplate.from_template(template)
-
-def create_agent_executor(model_name: str = "grok-beta") -> AgentExecutor:
-    """Create an agent executor with the specified Grok model."""
+def create_weather_agent(model_name: str = "grok-beta"):
+    """Create a LangChain agent with the specified Grok model."""
     if not XAI_API_KEY:
         raise ValueError("XAI_API_KEY environment variable is not set")
     
@@ -84,19 +62,17 @@ def create_agent_executor(model_name: str = "grok-beta") -> AgentExecutor:
         temperature=0.7
     )
     
-    # Create the agent
-    agent = create_react_agent(llm, tools, prompt)
+    # Create the agent with system prompt
+    system_prompt = """You are a helpful weather assistant. Use the available tools to answer questions about weather.
+    Be friendly and informative in your responses."""
     
-    # Create agent executor
-    agent_executor = AgentExecutor(
-        agent=agent,
+    agent = create_agent(
+        model=llm,
         tools=tools,
-        verbose=True,
-        handle_parsing_errors=True,
-        max_iterations=5
+        system_prompt=system_prompt
     )
     
-    return agent_executor
+    return agent
 
 @app.get("/")
 async def root():
@@ -134,15 +110,22 @@ async def chat_with_agent(request: AgentRequest):
         )
     
     try:
-        # Create agent executor
-        agent_executor = create_agent_executor(request.model)
+        # Create agent
+        agent = create_weather_agent(request.model)
         
         # Run the agent
-        result = agent_executor.invoke({"input": request.query})
+        result = agent.invoke({"messages": [{"role": "user", "content": request.query}]})
+        
+        # Extract the response from messages
+        response_text = ""
+        if "messages" in result:
+            for msg in result["messages"]:
+                if hasattr(msg, "content") and msg.content:
+                    response_text = msg.content
         
         return AgentResponse(
             query=request.query,
-            response=result.get("output", "No response generated"),
+            response=response_text or "No response generated",
             model=request.model
         )
     except Exception as e:
