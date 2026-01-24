@@ -49,6 +49,15 @@ uvicorn main:app --reload
 
 The API will be available at `http://localhost:8000`
 
+### Using the Example Client
+
+A simple example client is provided to demonstrate API usage:
+```bash
+python example_client.py
+```
+
+Note: Make sure to set your XAI_API_KEY in the .env file before running.
+
 ### API Endpoints
 
 #### Health Check
@@ -84,6 +93,7 @@ curl -X POST http://localhost:8000/agent \
 ```
 weather_ai/
 ├── main.py              # FastAPI application with LangChain agent
+├── example_client.py    # Example client demonstrating API usage
 ├── requirements.txt     # Python dependencies
 ├── .env.example        # Example environment variables
 └── README.md           # This file
