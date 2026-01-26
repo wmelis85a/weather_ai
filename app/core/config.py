@@ -1,0 +1,31 @@
+"""
+Core configuration module.
+Handles environment variables and application settings.
+"""
+import os
+from dotenv import load_dotenv
+
+
+# Load environment variables
+load_dotenv()
+
+
+class Settings:
+    """Application settings."""
+    
+    XAI_API_KEY: str = os.getenv("XAI_API_KEY", "")
+    DEFAULT_MODEL: str = "grok-beta"
+    DEFAULT_TEMPERATURE: float = 0.7
+    
+    # API Configuration
+    API_TITLE: str = "Weather AI Agent"
+    API_DESCRIPTION: str = "A FastAPI application using LangChain with Grok models"
+    API_VERSION: str = "1.0.0"
+    
+    # Server Configuration
+    HOST: str = "0.0.0.0"
+    PORT: int = 8000
+    DEBUG: bool = False
+
+
+settings = Settings()
