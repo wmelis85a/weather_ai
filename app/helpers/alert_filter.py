@@ -1,12 +1,13 @@
 import unicodedata
 
 def filter_alerts_by_string(response: dict, query: str) -> dict:
-    query = query.lower()
+    query = normalize(query)
 
     def alert_matches(alert: dict) -> bool:
         for value in alert.values():
             # string key
             if isinstance(value, str):
+
                 if query in normalize(value):
                     return True
 
