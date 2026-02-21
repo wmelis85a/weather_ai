@@ -48,4 +48,20 @@ class WeatherAlertResponse(BaseModel):
     futuro: List[WeatherAlert] = Field(default_factory=list)
 
     class Config:
+        pass
+
+
+class GeminiRequest(BaseModel):
+    """Request model for Gemini generation."""
+    prompt: str = Field(..., description="The prompt to send to Gemini")
+    model: Optional[str] = Field("gemini-3-flash-preview", description="The Gemini model to use")
+
+
+class GeminiResponse(BaseModel):
+    """Response model for Gemini generation."""
+    prompt: str
+    response: str
+    model: str
+
+    class Config:
         extra = "ignore"

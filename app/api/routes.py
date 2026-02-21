@@ -3,10 +3,11 @@ API routes for the Weather AI application.
 Defines all FastAPI endpoints.
 """
 from fastapi import APIRouter, HTTPException
-from app.domain.models import AgentRequest, AgentResponse, HealthCheck, WeatherAlertResponse
+from app.domain.models import AgentRequest, AgentResponse, HealthCheck, WeatherAlertResponse, GeminiRequest, GeminiResponse
 from app.agents.weather_agent import WeatherAgent
 from app.core.config import settings
 from app.domain.services.alerts import fetch_active_alerts
+from app.integrations.gemini import generate_with_gemini
 
 router = APIRouter()
 
@@ -60,4 +61,41 @@ async def chat_with_agent(request: AgentRequest):
         raise HTTPException(
             status_code=500,
             detail=f"Error running agent: {str(e)}"
+        )
+
+
+@router.post("/gemini", response_model=GeminiResponse)
+async def gemini_endpoint(request: GeminiRequest):
+    """
+    Generate content using Google's Gemini AI model.
+    
+    This endpoint sends a prompt to Google's Gemini API and returns the generated response.
+    The GEMINI_API_KEY environment variable must be set for this to work.
+    
+    Args:
+        request: GeminiRequest containing the prompt and optional model name
+        
+    Returns:
+        GeminiResponse with the generated text and model information
+        
+    Example request:
+        ```json
+        {
+            "prompt": "Explain how AI works in a few words",
+            "model": "gemini-2.0-flash"
+        }
+        ```
+    """
+    try:
+        response_text = await generate_with_gemini(request.prompt, request.model)
+        
+        return GeminiResponse(
+            prompt=request.prompt,
+            response=response_text,
+            model=request.model
+        )
+    except Exception as e:
+        raise HTTPException(
+            status_code=500,
+            detail=f"Error running Gemini: {str(e)}"
         )
