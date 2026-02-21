@@ -87,7 +87,10 @@ async def gemini_endpoint(request: GeminiRequest):
         ```
     """
     try:
-        response_text = await generate_with_gemini(request.prompt, request.model)
+        alerts_collector = await fetch_active_alerts()
+        scheduled_prompt = f"You are a helpful assistant that provides weather information. Here are the current active weather alerts:\n\n{alerts_collector}\n\nNow, inform the user, in portuguese BR, if there are any active alerts for the Rio de Janeiro metro area. Respond in a friendly way , by greeting the user and informing the news as if in a weather news website\n\n{request.prompt}"
+
+        response_text = await generate_with_gemini(scheduled_prompt, request.model)
         
         return GeminiResponse(
             prompt=request.prompt,
