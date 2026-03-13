@@ -25,8 +25,8 @@ class Settings:
     API_VERSION: str = "1.0.0"
     
     # Server Configuration
-    HOST: str = "0.0.0.0"
-    PORT: int = 8000
+    HOST: str = os.getenv("HOST", "0.0.0.0")
+    PORT: int = int(os.getenv("PORT", "8000"))
     DEBUG: bool = False
 
 
