@@ -14,6 +14,8 @@ class Settings:
     """Application settings."""
     
     XAI_API_KEY: str = os.getenv("XAI_API_KEY", "")
+    PREVMET_API_URL = os.getenv("PREVMET_API_URL", "")
+    PREVMET_API_ALERTS_URL = os.getenv("PREVMET_API_ALERTS_URL", "")
     DEFAULT_MODEL: str = "grok-beta"
     DEFAULT_TEMPERATURE: float = 0.7
     

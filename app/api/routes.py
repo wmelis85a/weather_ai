@@ -2,6 +2,7 @@
 API routes for the Weather AI application.
 Defines all FastAPI endpoints.
 """
+from app.domain.services.nearby_station import fetch_nearby_station_weather
 from fastapi import APIRouter, HTTPException
 from app.domain.models import AgentRequest, AgentResponse, HealthCheck, WeatherAlertResponse, GeminiRequest, GeminiResponse
 from app.agents.weather_agent import WeatherAgent
@@ -81,14 +82,14 @@ async def gemini_endpoint(request: GeminiRequest):
     Example request:
         ```json
         {
-            "prompt": "Explain how AI works in a few words",
             "model": "gemini-2.0-flash"
         }
         ```
     """
     try:
         alerts_collector = await fetch_active_alerts()
-        scheduled_prompt = f"You are a helpful assistant that provides weather information. Here are the current active weather alerts:\n\n{alerts_collector}\n\nNow, inform the user, in portuguese BR, if there are any active alerts for the Rio de Janeiro metro area. Respond in a friendly way , by greeting the user and informing the news as if in a weather news website\n\n{request.prompt}"
+        nearby_station_report = await fetch_nearby_station_weather()
+        scheduled_prompt = f"You are a helpful assistant that provides weather information. Here are the current active weather alerts:\n\n{alerts_collector} and {nearby_station_report}\n\nNow, inform the user, in portuguese BR, if there are any active alerts for the Rio de Janeiro metro area. Respond in a friendly way , by greeting the user and informing the news as if in a weather news website\n\n{request.prompt}"
 
         response_text = await generate_with_gemini(scheduled_prompt, request.model)
         

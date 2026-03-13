@@ -50,9 +50,38 @@ class WeatherAlertResponse(BaseModel):
     class Config:
         pass
 
+class NearbyStationWeatherData(BaseModel):
+    name: str = Field(alias="NOME")
+
+    class Config:
+        populate_by_name = True
+        extra = "ignore"
+
+class NearbyStationWeatherReport(BaseModel):
+    low: str = Field(alias="TEM_MIN")
+    high: str = Field(alias="TEM_MAX")
+    current: str = Field(alias="TEM_INS")
+    rainfall: str = Field(alias="CHUVA")
+    wind_speed: str = Field(alias="VEN_VEL")
+    wind_burst: str = Field(alias="VEN_RAJ")
+    measured_at: str = Field(alias="HR_MEDICAO")
+
+    class Config:
+        populate_by_name = True
+        extra = "ignore"
+
+class NearbyStationWeatherResponse(BaseModel):
+    station: NearbyStationWeatherData = Field(alias="estacao")
+    report: NearbyStationWeatherReport = Field(alias="dados")
+
+    class Config:
+        populate_by_name = True
+        extra = "ignore"
+
 
 class GeminiRequest(BaseModel):
     """Request model for Gemini generation."""
+    prompt: Optional[str] = Field(..., description="The prompt to send to Gemini")
     model: Optional[str] = Field("gemini-2.5-flash-lite", description="The Gemini model to use")
 
 

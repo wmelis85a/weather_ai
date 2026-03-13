@@ -1,9 +1,10 @@
 import httpx
 from app.domain.models import WeatherAlertResponse
+from app.core.config import settings
 
 async def fetch_active_alerts() -> WeatherAlertResponse:
     from app.helpers.alert_filter import filter_alerts_by_string
-    api_url = "https://apiprevmet3.inmet.gov.br/avisos/ativos"
+    api_url = settings.PREVMET_API_ALERTS_URL
 
     headers = {
         "User-Agent": "Mozilla/5.0"
