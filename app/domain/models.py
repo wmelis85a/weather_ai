@@ -53,7 +53,6 @@ class WeatherAlertResponse(BaseModel):
 
 class GeminiRequest(BaseModel):
     """Request model for Gemini generation."""
-    prompt: str = Field(..., description="The prompt to send to Gemini")
     model: Optional[str] = Field("gemini-2.5-flash-lite", description="The Gemini model to use")
 
 
