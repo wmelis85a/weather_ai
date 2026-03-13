@@ -4,7 +4,7 @@ Defines all FastAPI endpoints.
 """
 from app.domain.services.nearby_station import fetch_nearby_station_weather
 from fastapi import APIRouter, HTTPException
-from app.domain.models import AgentRequest, AgentResponse, HealthCheck, WeatherAlertResponse, GeminiRequest, GeminiResponse
+from app.domain.models import AgentRequest, AgentResponse, WeatherAlertResponse, GeminiRequest, GeminiResponse
 from app.agents.weather_agent import WeatherAgent
 from app.core.config import settings
 from app.domain.services.alerts import fetch_active_alerts
@@ -13,14 +13,10 @@ from app.integrations.gemini import generate_with_gemini
 router = APIRouter()
 
 
-@router.get("/health", response_model=HealthCheck)
+@router.get("/health")
 async def health_check():
-    """Health check endpoint."""
-    api_key_status = "configured" if settings.XAI_API_KEY else "missing"
-    return HealthCheck(
-        status="healthy",
-        api_key=api_key_status
-    )
+    """Minimal liveness endpoint."""
+    return {"status": "ok"}
 
 @router.get("/alerts", response_model=WeatherAlertResponse)
 async def get_active_alerts():
