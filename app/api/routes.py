@@ -14,7 +14,7 @@ import json
 router = APIRouter()
 
 
-@router.get("/health")
+@router.get("/health" , methods=["GET" , "HEAD"])
 async def health_check():
     """Minimal liveness endpoint."""
     return {"status": "ok"}
