@@ -9,6 +9,7 @@ from app.agents.weather_agent import WeatherAgent
 from app.core.config import settings
 from app.domain.services.alerts import fetch_active_alerts
 from app.integrations.gemini import generate_with_gemini
+import json
 
 router = APIRouter()
 
@@ -78,14 +79,39 @@ async def gemini_endpoint(request: GeminiRequest):
     Example request:
         ```json
         {
-            "model": "gemini-2.0-flash"
+            "model": "gemini-2.5-flash-lite"
         }
         ```
     """
     try:
         alerts_collector = await fetch_active_alerts()
         nearby_station_report = await fetch_nearby_station_weather()
-        scheduled_prompt = f"You are a helpful assistant that provides weather information. Here are the current active weather alerts:\n\n{alerts_collector} and {nearby_station_report}\n\nNow, inform the user, in portuguese BR, if there are any active alerts for the Rio de Janeiro metro area. Respond in a friendly way , by greeting the user and informing the news as if in a weather news website\n\n{request.prompt}"
+        scheduled_prompt = f"""
+        Você é um assistente meteorológico para a Região Metropolitana do Rio de Janeiro.
+
+        ## Dados disponíveis
+
+        ### Alertas ativos:
+        {alerts_collector}
+
+        ### Relatório da estação mais próxima:
+        {nearby_station_report}
+
+        ## Sua tarefa
+
+        Com base nos dados acima, responda ao usuário em **português brasileiro** seguindo este formato:
+
+        1. **Saudação** – cumprimente de forma natural e breve
+        2. **Situação atual** – resuma as condições do momento (temperatura, céu, vento)
+        3. **Alertas** – se houver alertas ativos, destaque-os com clareza; se não houver, confirme isso de forma tranquilizadora
+        4. **Recomendação** – uma dica prática e objetiva com base nas condições
+
+        Seja direto, informativo e evite linguagem técnica desnecessária.
+
+        ---
+
+        Mensagem do usuário: {request.prompt}
+        """
 
         response_text = await generate_with_gemini(scheduled_prompt, request.model)
         

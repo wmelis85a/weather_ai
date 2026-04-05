@@ -5,7 +5,7 @@ Handles communication with Google's Generative AI API.
 from google import genai
 
 
-async def generate_with_gemini(prompt: str, model: str = "gemini-3-flash-preview") -> str:
+async def generate_with_gemini(prompt: str, model: str = "gemini-2.5-flash-lite") -> str:
     """
     Generate content using Google's Gemini API.
     
@@ -13,7 +13,7 @@ async def generate_with_gemini(prompt: str, model: str = "gemini-3-flash-preview
     
     Args:
         prompt: The prompt to send to Gemini
-        model: The Gemini model to use (default: gemini-3-flash-preview)
+        model: The Gemini model to use (default: gemini-2.5-flash-lite)
         
     Returns:
         The generated text response from Gemini

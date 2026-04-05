@@ -1,15 +1,24 @@
 """
 FastAPI application with LangChain agent using Grok models.
 """
+
+from contextlib import asynccontextmanager
 from fastapi import FastAPI
 from app.api.routes import router
 from app.core.config import settings
+from app.scheduler import start_scheduler, scheduler
+
+
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    start_scheduler()
+    yield
+    scheduler.shutdown()
+
 
 # Initialize FastAPI app
 app = FastAPI(
-    title=settings.API_TITLE,
-    description=settings.API_DESCRIPTION,
-    version=settings.API_VERSION
+    lifespan=lifespan,
 )
 
 # Include API routes
