@@ -16,6 +16,7 @@ async def fetch_nearby_station_weather() -> NearbyStationWeatherResponse:
             response.raise_for_status()
 
             raw_body = response.text.strip()
+            print(f"Raw response body: {raw_body}...")  # Log the first 200 characters for debugging
             if not raw_body:
                 raise ValueError("Nearby station API returned an empty response body")
 

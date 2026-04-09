@@ -41,11 +41,10 @@ async def scheduled_weather_report():
         Com base nos dados acima, responda ao usuário em **português brasileiro** seguindo este formato:
 
         1. **Saudação** – cumprimente de forma natural e breve
-        2. **Situação atual** – resuma as condições do momento (temperatura, céu, vento)
+        2. **Situação atual** – resuma as condições do momento : pode incluir informaçoes detalhdas da estação mais próxima, como temperatura, céu e vento etc
         3. **Alertas** – se houver alertas ativos, destaque-os com clareza; se não houver, confirme isso de forma tranquilizadora
         4. **Recomendação** – uma dica prática e objetiva com base nas condições
 
-        Seja direto, informativo e evite linguagem técnica desnecessária.
 
         ---
 
@@ -54,6 +53,8 @@ async def scheduled_weather_report():
 
 
     response_text = await generate_with_gemini(scheduled_prompt, "gemini-2.5-flash-lite")
+    print({alerts_collector})
+    print(type(alerts_collector))
     _send_email(response_text)
     print(f"Relatório enviado para {EMAIL_TO}")
 

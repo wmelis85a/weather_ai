@@ -1,7 +1,7 @@
 """
 Domain models for Weather AI application.
 """
-from typing import List, Optional
+from typing import List, Optional ,Any
 from pydantic import BaseModel, Field
 
 
@@ -58,13 +58,13 @@ class NearbyStationWeatherData(BaseModel):
         extra = "ignore"
 
 class NearbyStationWeatherReport(BaseModel):
-    low: str = Field(alias="TEM_MIN")
-    high: str = Field(alias="TEM_MAX")
-    current: str = Field(alias="TEM_INS")
-    rainfall: str = Field(alias="CHUVA")
-    wind_speed: str = Field(alias="VEN_VEL")
-    wind_burst: str = Field(alias="VEN_RAJ")
-    measured_at: str = Field(alias="HR_MEDICAO")
+    low: Any = Field(alias="TEM_MIN")
+    high: Any = Field(alias="TEM_MAX")
+    current: Any = Field(alias="TEM_INS")
+    rainfall: Any = Field(alias="CHUVA")
+    wind_speed: Any = Field(alias="VEN_VEL")
+    wind_burst: Any = Field(alias="VEN_RAJ")
+    measured_at: Any = Field(alias="HR_MEDICAO")
 
     class Config:
         populate_by_name = True
