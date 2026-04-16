@@ -22,41 +22,47 @@ EMAIL_TO = os.getenv("EMAIL_TO")
 scheduler = AsyncIOScheduler()
 
 async def scheduled_weather_report():
-    alerts_collector = await fetch_active_alerts()
-    nearby_station_report = await fetch_nearby_station_weather()
+    try:
+        print("running job: scheduled_weather_report")
+        alerts_collector = await fetch_active_alerts()
+        nearby_station_report = await fetch_nearby_station_weather()
 
-    scheduled_prompt = f"""
-        Você é um assistente meteorológico para a Região Metropolitana do Rio de Janeiro.
+        scheduled_prompt = f"""
+            Você é um assistente meteorológico para a Região Metropolitana do Rio de Janeiro.
 
-        ## Dados disponíveis
+            ## Dados disponíveis
 
-        ### Alertas ativos:
-        {alerts_collector}
+            ### Alertas ativos:
+            {alerts_collector}
 
-        ### Relatório da estação mais próxima:
-        {nearby_station_report}
+            ### Relatório da estação mais próxima:
+            {nearby_station_report}
 
-        ## Sua tarefa
+            ## Sua tarefa
 
-        Com base nos dados acima, responda ao usuário em **português brasileiro** seguindo este formato:
+            Com base nos dados acima, responda ao usuário em **português brasileiro** seguindo este formato:
 
-        1. **Saudação** – cumprimente de forma natural e breve
-        2. **Situação atual** – resuma as condições do momento : pode incluir informaçoes detalhdas da estação mais próxima, como temperatura, céu e vento etc
-        3. **Alertas** – se houver alertas ativos, destaque-os com clareza; se não houver, confirme isso de forma tranquilizadora
-        4. **Recomendação** – uma dica prática e objetiva com base nas condições
-
-
-        ---
-
-    
-        """
+            1. **Saudação** – cumprimente de forma natural e breve
+            2. **Situação atual** – resuma as condições do momento : pode incluir informaçoes detalhdas da estação mais próxima, como temperatura, céu e vento etc
+            3. **Alertas** – se houver alertas ativos, destaque-os com clareza; se não houver, confirme isso de forma tranquilizadora
+            4. **Recomendação** – uma dica prática e objetiva com base nas condições
 
 
-    response_text = await generate_with_gemini(scheduled_prompt, "gemini-2.5-flash-lite")
-    print({alerts_collector})
-    print(type(alerts_collector))
-    _send_email(response_text)
-    print(f"Relatório enviado para {EMAIL_TO}")
+            ---
+
+        
+            """
+
+
+        response_text = await generate_with_gemini(scheduled_prompt, "gemini-2.5-flash-lite")
+        print(alerts_collector)
+        print(type(alerts_collector))
+        _send_email(response_text)
+        print(f"Relatório enviado para {EMAIL_TO}")
+    except Exception as e:
+        import traceback
+        print("Error in scheduled_weather_report:", e) 
+        traceback.print_exc()
 
 
 
@@ -73,6 +79,7 @@ def _send_email(content: str) -> None:
     })
 
 def start_scheduler():
+    print("starting scheduler...")
     scheduler.add_job(
         scheduled_weather_report,
         trigger="cron",
